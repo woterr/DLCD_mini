@@ -11,6 +11,14 @@ GEM5_BIN="${GEM5:-}"
 OUT="${OUT:-$ROOT/results}"
 
 if [[ -z "$GEM5_BIN" ]]; then
+    if [[ -x "$HOME/gem5/build/MIPS/gem5.opt" ]]; then
+        GEM5_BIN="$HOME/gem5/build/MIPS/gem5.opt"
+    elif command -v gem5.opt >/dev/null 2>&1; then
+        GEM5_BIN="$(command -v gem5.opt)"
+    fi
+fi
+
+if [[ -z "$GEM5_BIN" ]]; then
     echo "Set GEM5 to the MIPS gem5 binary, for example:" >&2
     echo "  GEM5=~/gem5/build/MIPS/gem5.opt ./scripts/run.sh" >&2
     exit 1
@@ -21,4 +29,5 @@ if [[ ! -x "$GEM5_BIN" ]]; then
 fi
 
 "$GEM5_BIN" -d "$OUT" "$ROOT/configs/mips_se.py" "$@"
+echo
 python3 "$ROOT/scripts/show_stats.py" "$OUT/stats.txt"

@@ -1,95 +1,78 @@
-# Small MIPS32 little-endian program for gem5 syscall emulation.
+# MIPS32 demonstration program for the DLCD mini project.
 #
-# It performs:
-#   - integer arithmetic (15 + 27 = 42)
-#   - a store and a load through memory
-#   - a conditional branch (checks the loaded value)
-#   - a loop with a branch (sums 4 + 3 + 2 + 1 = 10)
-#   - a write syscall that prints the arithmetic result as decimal
-#   - an exit syscall
+# It follows the examples in the course notes (Section 6):
+#   * variables in registers ($s4..$s7), like Code Example 6.1
+#   * add, sub and addi arithmetic
+#   * sw and lw for a byte-addressed memory word on the stack
+#   * bne and beq conditional branches (with explicit nop delay slots)
+#   * a countdown loop whose result can be checked by hand
 #
-# This is a normal MIPS Linux user program: the syscall numbers below are
-# the MIPS o32 Linux numbers used by gem5 (write = 4004, exit = 4001).
+# Hand calculation:
+#   f   = (g + h) - (i + j) = (5 + 3) - (4 + 2) = 2
+#   sum = 3 + 2 + 1 = 6
+# The program prints the sum as one ASCII digit, so the expected output is "6".
 
-        .set noreorder
-        .set noat
+        .set    noreorder
+        .set    noat
 
         .text
-        .globl _start
+        .globl  _start
+
 _start:
-        # Reserve a small stack frame and a scratch area.
+        # Make a small stack frame.  The initial value of $sp is chosen by
+        # gem5's program loader; this instruction only lowers it by 32 bytes.
         addiu   $sp, $sp, -32
 
-        # 15 + 27 = 42.  t2 holds the result.
-        addiu   $t0, $zero, 15
-        addiu   $t1, $zero, 27
-        addu    $t2, $t0, $t1
+        # g = 5, h = 3, i = 4, j = 2
+        addi    $s4, $zero, 5
+        addi    $s5, $zero, 3
+        addi    $s6, $zero, 4
+        addi    $s7, $zero, 2
 
-        # Store the result to memory and read it back.
-        sw      $t2, 0($sp)
-        lw      $t3, 0($sp)
+        # f = (g + h) - (i + j)
+        add     $t0, $s4, $s5       # $t0 = 5 + 3 = 8
+        add     $t1, $s6, $s7       # $t1 = 4 + 2 = 6
+        sub     $s3, $t0, $t1       # $s3 = f = 2
 
-        # Branch if the loaded value is wrong.
-        addiu   $t4, $zero, 42
-        bne     $t3, $t4, fail
-        nop
+        # Store f to the stack and load it back.
+        sw      $s3, 16($sp)        # memory[$sp + 16] = 2
+        lw      $t2, 16($sp)        # $t2 = 2
 
-        # Loop: 4 + 3 + 2 + 1 = 10 in t6.  This exercises backward branches.
-        addiu   $t5, $zero, 4
-        addiu   $t6, $zero, 0
+        # Check the loaded value: if it is not 2, exit with status 1.
+        addi    $t3, $zero, 2
+        bne     $t2, $t3, fail
+        nop                         # branch delay slot
+
+        # Countdown loop: sum = 3 + 2 + 1 = 6
+        addi    $t4, $zero, 0       # $t4 = sum
+        addi    $t5, $zero, 3       # $t5 = i
 loop:
-        addu    $t6, $t6, $t5
-        addiu   $t5, $t5, -1
-        bne     $t5, $zero, loop
-        nop
+        add     $t4, $t4, $t5       # sum = sum + i
+        addi    $t5, $t5, -1        # i = i - 1
+        bne     $t5, $zero, loop    # repeat while i != 0
+        nop                         # branch delay slot
 
-        # Convert the 42 in t3 to decimal characters, backwards, ending at
-        # buffer+15.  t7 points at the first digit.
-        la      $t7, buffer + 15
-        sb      $zero, 0($t7)
-        addiu   $t8, $zero, 10
-        move    $t9, $t3
-convert:
-        divu    $t9, $t8
-        mfhi    $s0
-        mflo    $t9
-        addiu   $s0, $s0, 48          # '0'
-        addiu   $t7, $t7, -1
-        sb      $s0, 0($t7)
-        bne     $t9, $zero, convert
-        nop
-
-        # write(1, t7, buffer + 15 - t7)
-        la      $t0, buffer + 15
-        subu    $a2, $t0, $t7
-        move    $a1, $t7
-        addiu   $a0, $zero, 1
-        addiu   $v0, $zero, 4004
-        syscall
-
-        # write(1, "\n", 1)
-        la      $a1, newline
-        addiu   $a2, $zero, 1
-        addiu   $a0, $zero, 1
-        addiu   $v0, $zero, 4004
-        syscall
-
-        # exit(0)
-        addiu   $a0, $zero, 0
-        addiu   $v0, $zero, 4001
-        syscall
-        nop
+        # Store the sum, load it back, and check the load with beq.
+        sw      $t4, 20($sp)        # memory[$sp + 20] = 6
+        lw      $t6, 20($sp)        # $t6 = 6
+        beq     $t6, $t4, ok        # the loaded value equals the sum
+        nop                         # branch delay slot
 
 fail:
-        # exit(1) if the memory check failed.
-        addiu   $a0, $zero, 1
-        addiu   $v0, $zero, 4001
+        addi    $a0, $zero, 1
+        addi    $v0, $zero, 4001    # exit(1): the checks failed
         syscall
-        nop
 
-        .data
-        .align  2
-buffer:
-        .space  16
-newline:
-        .byte   10
+ok:
+        # Convert 6 to ASCII '6' = 54 and write it to stdout.
+        addi    $t7, $t6, 48        # $t7 = 6 + 48 = 54 = '6'
+        sb      $t7, 24($sp)        # memory[$sp + 24] = '6' (one byte)
+        addi    $a1, $sp, 24        # $a1 = address of the byte
+        addi    $a2, $zero, 1       # $a2 = length 1
+        addi    $a0, $zero, 1       # $a0 = file descriptor 1 (stdout)
+        addi    $v0, $zero, 4004    # write(1, $a1, 1)
+        syscall
+
+        addi    $a0, $zero, 0
+        addi    $v0, $zero, 4001    # exit(0)
+        syscall
