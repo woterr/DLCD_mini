@@ -86,15 +86,6 @@ def main():
             extra += f" A=0x{int(address.group(1), 16):08x}"
         print(f"{pc:<10}  {instruction:<32}  {extra}".rstrip())
 
-    stats = (OUT / "stats.txt").read_text()
-    instructions = re.search(r"^simInsts\s+(\d+)", stats, re.M)
-    cycles = re.search(r"^board\.processor\.cores\.core\.numCycles\s+(\d+)", stats, re.M)
-    print()
-    if instructions:
-        print(f"Instructions: {instructions.group(1)}")
-    if cycles:
-        print(f"Cycles:       {cycles.group(1)}")
-
 
 if __name__ == "__main__":
     main()

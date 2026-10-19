@@ -32,8 +32,6 @@ PC          instruction                       result
 0x4000fc    bne $t2, $t3, fail
 0x400100    nop
 ...
-Instructions: 39
-Cycles:       2260
 ```
 
 If gem5 is not at `~/gem5/build/MIPS/gem5.opt`, set `GEM5`:
@@ -45,6 +43,9 @@ GEM5=/path/to/gem5/build/MIPS/gem5.opt python3 scripts/mips_demo.py
 The `D=` value is the value the instruction wrote (a register result, or the
 data stored by `sw`/`sb`). The `A=` value is the memory address used by a load or
 store. Both come directly from gem5's `ExecAll` trace.
+
+The PC column is the address of each executed instruction. The same PC can
+appear more than once when the program runs a loop or takes a branch.
 
 ## The program
 
@@ -146,12 +147,6 @@ Then run the demo:
 python3 scripts/mips_demo.py
 ```
 
-The normal gem5 run with the statistics summary is still available:
-
-```bash
-./scripts/run.sh
-```
-
 ## Files
 
 ```text
@@ -160,8 +155,7 @@ workload/mips_multicycle.s  MIPS32 program
 scripts/mips_demo.py        run gem5 and print the executed instruction trace
 scripts/build_workload.sh   assemble and link the program
 scripts/get_toolchain.sh    download the little-endian MIPS cross compiler
-scripts/run.sh              normal gem5 run plus statistics
-scripts/show_stats.py       print selected fields from results/stats.txt
+scripts/run.sh              plain gem5 run without the trace printout
 ```
 
 Generated files (the ELF, `results/`, `.toolchain/`) are excluded by
@@ -171,7 +165,4 @@ Generated files (the ELF, `results/`, `.toolchain/`) are excluded by
 
 The checked run used Fedora 44 (x86_64), gem5 v25.1.0.1 built for MIPS, and the
 musl.cc `mipsel-linux-musl-gcc` 11.2.1 cross compiler. The program printed `6`,
-and gem5 reported 39 instructions and 2260 cycles.
-
-The cycle count is gem5's timing-model result for a cacheless, one-instruction-
-at-a-time CPU. It is not a multicycle-datapath measurement.
+and the trace printed by the script comes from that gem5 run.

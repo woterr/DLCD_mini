@@ -1,15 +1,3 @@
-#!/usr/bin/env python3
-"""Run a small little-endian MIPS32 program in gem5 syscall emulation.
-
-This uses the gem5 standard library and the TimingSimpleCPU model.  It is a
-normal MIPS user program running in SE mode; it is not a model of the
-textbook multicycle datapath.
-
-Typical use from the project root:
-
-    /path/to/gem5/build/MIPS/gem5.opt -d results configs/mips_se.py
-"""
-
 import argparse
 from pathlib import Path
 

@@ -1,9 +1,6 @@
 #!/usr/bin/env bash
-# Run the gem5 simulation and print the main statistics.
-#
-#   GEM5=~/gem5/build/MIPS/gem5.opt ./scripts/run.sh
-#
-# Extra arguments are passed to configs/mips_se.py (for example --binary).
+# Run the gem5 simulation
+
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -29,5 +26,3 @@ if [[ ! -x "$GEM5_BIN" ]]; then
 fi
 
 "$GEM5_BIN" -d "$OUT" "$ROOT/configs/mips_se.py" "$@"
-echo
-python3 "$ROOT/scripts/show_stats.py" "$OUT/stats.txt"

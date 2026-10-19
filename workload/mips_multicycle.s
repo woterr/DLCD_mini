@@ -1,15 +1,9 @@
 # MIPS32 demonstration program for the DLCD mini project.
-#
-# It follows the examples in the course notes (Section 6):
-#   * variables in registers ($s4..$s7), like Code Example 6.1
-#   * add, sub and addi arithmetic
-#   * sw and lw for a byte-addressed memory word on the stack
-#   * bne and beq conditional branches (with explicit nop delay slots)
-#   * a countdown loop whose result can be checked by hand
-#
+
 # Hand calculation:
 #   f   = (g + h) - (i + j) = (5 + 3) - (4 + 2) = 2
 #   sum = 3 + 2 + 1 = 6
+
 # The program prints the sum as one ASCII digit, so the expected output is "6".
 
         .set    noreorder
