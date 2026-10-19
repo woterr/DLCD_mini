@@ -44,8 +44,7 @@ def main() -> None:
     memory = SingleChannelDDR3_1600(size="64MiB")
 
     # TimingSimpleCPU executes one instruction at a time and models the timing
-    # of instruction fetches and data accesses.  It is not a five-stage
-    # multicycle state machine.
+    # of instruction fetches and data accesses.
     processor = SimpleProcessor(
         cpu_type=CPUTypes.TIMING,
         isa=ISA.MIPS,
