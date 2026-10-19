@@ -41,7 +41,7 @@ def main():
     if not BINARY.is_file():
         sys.exit(
             f"Workload not found at {BINARY}.\n"
-            "Build it with scripts/get_toolchain.sh and scripts/build_workload.sh."
+            "Run scripts/prepare_workload.sh first."
         )
 
     OUT.mkdir(parents=True, exist_ok=True)

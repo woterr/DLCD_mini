@@ -29,7 +29,7 @@ def main() -> None:
     if not binary.is_file():
         raise SystemExit(
             f"Workload not found: {binary}\n"
-            "Build it first with scripts/build_workload.sh"
+            "Build it first with scripts/prepare_workload.sh"
         )
 
     # Fail early if this gem5 binary was not compiled for MIPS.
