@@ -1,0 +1,22 @@
+# Generated workload
+workload/build/
+
+# Downloaded cross compiler
+.toolchain/
+
+# gem5 output and build trees
+build/
+gem5/
+results/
+m5out/
+*.log
+stats.txt
+config.ini
+config.json
+simout/
+simerr.txt
+
+# Python cache and local environments
+__pycache__/
+*.py[cod]
+.venv/
